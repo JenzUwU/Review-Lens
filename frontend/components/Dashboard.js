@@ -14,7 +14,7 @@ ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Tooltip, Le
 export default function Dashboard({ data }) {
   if (!data) return null;
 
-  const { counts, pain_points, positives, reviews, analyzed, summary } = data;
+  const { counts, pain_points, positives, analyzed, summary } = data;
 
   // Sentiment pie chart
   const sentimentLabels = Object.keys(counts).filter(k => k !== 'total');
@@ -24,14 +24,14 @@ export default function Dashboard({ data }) {
       {
         data: sentimentLabels.map(label => counts[label] || 0),
         backgroundColor: [
-          'rgba(75, 192, 75, 0.8)',   // positive green
-          'rgba(192, 75, 75, 0.8)',   // negative red
-          'rgba(150, 150, 150, 0.8)',  // neutral gray
+          'rgba(15, 95, 110, 0.8)',   // positive teal
+          'rgba(220, 38, 38, 0.8)',   // negative crimson
+          'rgba(100, 116, 139, 0.8)',  // neutral slate
         ],
         borderColor: [
-          'rgb(75, 192, 75)',
-          'rgb(192, 75, 75)',
-          'rgb(150, 150, 150)',
+          'rgb(15, 95, 110)',
+          'rgb(220, 38, 38)',
+          'rgb(100, 116, 139)',
         ],
         borderWidth: 1,
       },
@@ -47,8 +47,8 @@ export default function Dashboard({ data }) {
       {
         label: 'Mentions',
         data: painPointsValues,
-        backgroundColor: 'rgba(192, 75, 75, 0.8)',
-        borderColor: 'rgb(192, 75, 75)',
+        backgroundColor: 'rgba(220, 38, 38, 0.8)',
+        borderColor: 'rgb(220, 38, 38)',
         borderWidth: 1,
       },
     ],
@@ -63,8 +63,8 @@ export default function Dashboard({ data }) {
       {
         label: 'Mentions',
         data: positivesValues,
-        backgroundColor: 'rgba(75, 192, 75, 0.8)',
-        borderColor: 'rgb(75, 192, 75)',
+        backgroundColor: 'rgba(15, 95, 110, 0.8)',
+        borderColor: 'rgb(15, 95, 110)',
         borderWidth: 1,
       },
     ],
@@ -94,7 +94,10 @@ export default function Dashboard({ data }) {
 
   return (
     <div className="dashboard-section">
-      <h2 style={{ marginBottom: '30px', color: '#333' }}>Analysis Results for {data.company}</h2>
+      <div className="dashboard-heading">
+        <p className="eyebrow">Local analysis complete</p>
+        <h2>Results for {data.company}</h2>
+      </div>
 
       {summary && (
         <div className="success" style={{ marginBottom: '30px' }}>
@@ -108,15 +111,15 @@ export default function Dashboard({ data }) {
           <h3>Total Reviews</h3>
           <div className="value">{counts.total || 0}</div>
         </div>
-        <div className="metric-card" style={{ background: 'linear-gradient(135deg, #75b954 0%, #5a8c3a 100%)' }}>
+        <div className="metric-card" style={{ background: 'linear-gradient(135deg, #0f5f6e 0%, #064e61 100%)' }}>
           <h3>Positive</h3>
           <div className="value">{counts.POSITIVE || 0}</div>
         </div>
-        <div className="metric-card" style={{ background: 'linear-gradient(135deg, #d97e6a 0%, #b83d28 100%)' }}>
+        <div className="metric-card" style={{ background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)' }}>
           <h3>Negative</h3>
           <div className="value">{counts.NEGATIVE || 0}</div>
         </div>
-        <div className="metric-card" style={{ background: 'linear-gradient(135deg, #999 0%, #666 100%)' }}>
+        <div className="metric-card" style={{ background: 'linear-gradient(135deg, #64748b 0%, #475569 100%)' }}>
           <h3>Neutral</h3>
           <div className="value">{counts.NEUTRAL || 0}</div>
         </div>
@@ -131,14 +134,22 @@ export default function Dashboard({ data }) {
 
         <div className="chart-container">
           <h3>Top Pain Points</h3>
-          <Bar data={painPointsData} options={chartOptions} />
+          {pain_points.length ? (
+            <Bar data={painPointsData} options={chartOptions} />
+          ) : (
+            <p className="empty-state">No repeated negative keywords were found.</p>
+          )}
         </div>
       </div>
 
       <div className="charts-grid">
         <div className="chart-container">
           <h3>What Users Love</h3>
-          <Bar data={positivesData} options={chartOptions} />
+          {positives.length ? (
+            <Bar data={positivesData} options={chartOptions} />
+          ) : (
+            <p className="empty-state">No repeated positive keywords were found.</p>
+          )}
         </div>
       </div>
 
@@ -157,8 +168,10 @@ export default function Dashboard({ data }) {
             {analyzed && analyzed.length > 0 ? (
               analyzed.map((review, idx) => (
                 <tr key={idx}>
-                  <td style={{ maxWidth: '400px', wordWrap: 'break-word' }}>
-                    {review.text.substring(0, 100)}...
+                  <td className="review-text">
+                    {review.text.length > 140
+                      ? `${review.text.substring(0, 140)}...`
+                      : review.text}
                   </td>
                   <td>
                     <span className={getSentimentBadge(review.label)}>

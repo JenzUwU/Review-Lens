@@ -1,168 +1,111 @@
-# ReviewLens - AI-Powered Review Sentiment Analyzer
+# ReviewLens
 
-A fullstack web application that scrapes customer reviews and performs sentiment analysis using HuggingFace's RoBERTa model.
+ReviewLens analyzes restaurant and customer reviews directly in the browser. Users
+can paste reviews or upload a CSV file, then view sentiment counts, recurring pain
+points, positive highlights, confidence scores, and a short summary.
 
-## Features
+No Google API, billing account, Python server, or sample review data is required.
+Review text stays on the user's device.
 
-- **Sentiment Analysis**: Automatically classify reviews as Positive, Negative, or Neutral
-- **Keyword Extraction**: Identify top pain points and highlighted strengths
-- **Interactive Dashboard**: Beautiful charts and metrics with Chart.js
-- **Sample & Live Data**: Use sample data for quick demos or scrape from Trustpilot
-- **Fully Dockerized**: Easy deployment with Docker Compose
+## How it works
 
-## Tech Stack
+1. Enter a restaurant or business name.
+2. Paste one review per line, or upload a CSV with a `review`, `review_text`,
+   `text`, or `comment` column.
+3. The browser downloads and caches a quantized DistilBERT sentiment model.
+4. ReviewLens analyzes up to 500 reviews and renders the dashboard.
 
-**Frontend:**
-- Next.js 14 (React)
-- Chart.js for visualizations
-- CSS Grid for responsive design
-- Axios for API calls
+## Technology
 
-**Backend:**
-- FastAPI (Python)
-- Hugging Face Transformers (RoBERTa sentiment model)
-- BeautifulSoup4 for web scraping
-- Pydantic for validation
+- Next.js 16 and React 18
+- Transformers.js and ONNX Runtime Web
+- `Xenova/distilbert-base-uncased-finetuned-sst-2-english`
+- Papa Parse for CSV input
+- Chart.js for dashboard visualizations
 
-## Project Structure
+## Local development
 
-```
-reviewlens/
-├── frontend/                 # Next.js React app
-│   ├── pages/
-│   │   ├── _app.js
-│   │   └── index.js
-│   ├── components/
-│   │   ├── Form.js
-│   │   └── Dashboard.js
-│   ├── styles/
-│   │   └── globals.css
-│   ├── package.json
-│   ├── next.config.js
-│   ├── .env.local.example
-│   └── Dockerfile
-│
-├── backend/                  # FastAPI Python app
-│   ├── app/
-│   │   ├── main.py          # FastAPI entry point
-│   │   ├── scraper.py       # Trustpilot scraper & sample data
-│   │   ├── analyzer.py      # Sentiment analysis & keyword extraction
-│   │   ├── schemas.py       # Pydantic models
-│   │   ├── requirements.txt
-│   │   └── Dockerfile
-│
-└── docker-compose.yml        # Local dev environment
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.11+
-- Node.js 18+
-- Docker & Docker Compose (optional)
-
-### Local Development
-
-#### Backend Setup
+### Quick Start (Frontend Only - Recommended)
 
 ```powershell
-# Navigate to backend
-cd backend\app
-
-# Create and activate virtual environment
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the FastAPI server
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-The API will be available at `http://localhost:8000`
-- **API Docs**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/health
-
-#### Frontend Setup
-
-```powershell
-# Navigate to frontend
 cd frontend
-
-# Install dependencies
 npm install
-
-# Create .env.local file
-Copy-Item .env.local.example .env.local
-
-# Run the dev server
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:3000`
+Open `http://localhost:3000`.
 
-### Using Docker Compose
+The first analysis requires internet access to download Transformers.js from
+jsDelivr and the model from Hugging Face. Browser caching makes later analyses
+faster.
 
+### Full Stack Development (Frontend + Backend API)
+
+**Option 1: PowerShell Script (Windows)**
 ```powershell
-# From the project root
-docker-compose up --build
+# Run from project root
+.\start-dev.ps1
+```
+This automatically:
+- Installs dependencies (frontend + backend)
+- Creates Python virtual environment
+- Starts backend on `http://localhost:8000`
+- Starts frontend on `http://localhost:3000`
 
-# Frontend: http://localhost:3000
-# Backend: http://localhost:8000
+**Option 2: npm Scripts**
+```powershell
+# Install all dependencies (one time)
+npm install:all
+
+# Start both frontend and backend
+npm run dev
+
+# Or start individually:
+npm run dev:frontend    # Frontend on port 3000
+npm run dev:backend     # Backend on port 8000
 ```
 
-## API Endpoint
+**Option 3: Manual Start**
+```powershell
+# Terminal 1: Backend
+cd backend/app
+python -m pip install -r requirements.txt
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
-### POST /analyze_and_scrape
-
-**Request:**
-```json
-{
-  "company": "notion.so",
-  "use_sample": true
-}
+# Terminal 2: Frontend
+cd frontend
+npm install
+npm run dev
 ```
 
-**Response:**
-```json
-{
-  "company": "notion.so",
-  "reviews": ["Review text 1", "Review text 2", ...],
-  "analyzed": [
-    {"text": "...", "label": "POSITIVE", "score": 0.95},
-    {"text": "...", "label": "NEGATIVE", "score": 0.87}
-  ],
-  "counts": {
-    "POSITIVE": 10,
-    "NEGATIVE": 3,
-    "NEUTRAL": 2,
-    "total": 15
-  },
-  "pain_points": [["pricing", 5], ["performance", 3]],
-  "positives": [["ui", 7], ["support", 4]],
-  "summary": "..."
-}
+Backend API docs available at `http://localhost:8000/docs`
+
+## Deploy to Vercel
+
+1. Push the repository to GitHub.
+2. Import it into Vercel.
+3. Set the project Root Directory to `frontend`.
+4. Deploy using the detected Next.js settings.
+
+No environment variables or backend deployment are required.
+
+## CSV format
+
+```csv
+review,rating,date
+"Friendly staff and excellent breakfast",5,2026-06-01
+"Our order was cold and very late",2,2026-06-02
 ```
 
-## Performance Notes
+## Current limitations
 
-- RoBERTa model loads once at startup (not per-request)
-- Typical analysis: 15 reviews in ~3-5 seconds
-- For production: Consider caching, batch processing, or GPU acceleration
-- Trustpilot scraping requires JavaScript rendering (Selenium/Playwright recommended)
+- The model is English-focused.
+- Neutral sentiment is assigned when model confidence is below 70%.
+- Keyword extraction uses word frequency, not aspect-based sentiment.
+- Performance depends on the user's device and review count.
 
-## Future Enhancements
+## Backend API
 
-- [ ] Database storage (PostgreSQL)
-- [ ] User authentication
-- [ ] Review export (PDF, CSV)
-- [ ] Real-time scraping with Selenium
-- [ ] Multi-language sentiment analysis
-- [ ] Trend analysis over time
-- [ ] Email notifications
-
-## License
-
-MIT
+The `backend` directory contains an optional FastAPI server for review scraping
+and analysis. It's not required for the browser-based frontend to work, but can
+be used as an alternative backend service if needed.

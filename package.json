@@ -1,0 +1,23 @@
+{
+  "name": "reviewlens",
+  "version": "1.0.0",
+  "description": "ReviewLens - AI-powered review sentiment analyzer",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd frontend && npm install && cd ..",
+    "dev": "npm run dev:frontend & npm run dev:backend",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend/app && python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "build:frontend": "cd frontend && npm run build",
+    "start:frontend": "cd frontend && npm start",
+    "lint:frontend": "cd frontend && npm run lint"
+  },
+  "keywords": [
+    "sentiment-analysis",
+    "reviews",
+    "nextjs",
+    "fastapi"
+  ],
+  "author": "",
+  "license": "MIT"
+}

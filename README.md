@@ -1,5 +1,7 @@
 # ReviewLens
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/8c25c1e7-5e8a-44f8-a7b0-f7507bcbbd1a/deploy-status)](https://app.netlify.com/projects/review-lenss/deploys)
+
 ReviewLens analyzes restaurant and customer reviews directly in the browser. Users
 can paste reviews or upload a CSV file, then view sentiment counts, recurring pain
 points, positive highlights, confidence scores, and a short summary.
